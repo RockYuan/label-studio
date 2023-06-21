@@ -63,4 +63,33 @@ services:
     volumes:
       - ${POSTGRES_DATA_DIR:-./postgres-data}:/var/lib/postgresql/data
       - ./deploy/pgsql/certs:/var/lib/postgresql/certs:ro
+  
+  redis:
+    image: redis:alpine
+    container_name: redis
+    hostname: redis
+    volumes:
+      - "./data/redis:/data"
+    expose:
+      - 6379
+  server:
+    image: label_studio_ml:mmdetection
+    container_name: server
+    # build: .
+    user: root
+    environment:
+      - MODEL_DIR=/data/models
+      - RQ_QUEUE_NAME=default
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - 9090:9090
+    depends_on:
+      - redis
+    links:
+      - redis
+    volumes:
+      - "./data/server:/data"
+      - "./mydata/media/upload:/data/upload"
+      - "./logs:/tmp"
 
