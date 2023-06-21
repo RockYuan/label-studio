@@ -38,6 +38,10 @@ RUN set -eux \
     apt-get purge --assume-yes --auto-remove --option APT::AutoRemove::RecommendsImportant=false \
      --option APT::AutoRemove::SuggestsImportant=false && rm -rf /var/lib/apt/lists/* /tmp/*
 
+RUN set -eux \
+ && pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/ \
+ && pip config set install.trusted-host mirrors.aliyun.com
+
 RUN --mount=type=cache,target=$PIP_CACHE_DIR,uid=1001,gid=0 \
     pip3 install --upgrade pip setuptools && pip3 install uwsgi uwsgitop
 
