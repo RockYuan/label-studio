@@ -2,11 +2,14 @@ version: "3.9"
 services:
   nginx:
     build: .
-    image: label-studio:latest
+    image: registry.cn-shenzhen.aliyuncs.com/hiufai/label-studio:latest
+    container_name: label-studio
     restart: unless-stopped
     ports:
       - "8080:8085"
       - "8081:8086"
+    expose:
+      - "8080"
     depends_on:
       - app
     environment:
@@ -27,7 +30,7 @@ services:
     tty: true
     build: .
     user: root
-    image: label-studio:latest
+    image: registry.cn-shenzhen.aliyuncs.com/hiufai/label-studio:latest
     restart: unless-stopped
     expose:
       - "8000"
@@ -40,7 +43,8 @@ services:
       - POSTGRE_PASSWORD=
       - POSTGRE_PORT=5432
       - POSTGRE_HOST=db
-      - LABEL_STUDIO_HOST=${LABEL_STUDIO_HOST:-}
+      # - LABEL_STUDIO_HOST=${LABEL_STUDIO_HOST:-}
+      - LABEL_STUDIO_HOST=http://192.168.17.7:8080 # 这里增加host地址, 送样本到后端模型预测时会用这个host
       - JSON_LOG=1
     #      - LOG_LEVEL=DEBUG
     volumes:
@@ -73,8 +77,8 @@ services:
     expose:
       - 6379
   server:
-    image: label_studio_ml:mmdetection
-    container_name: server
+    image: registry.cn-shenzhen.aliyuncs.com/hiufai/label_studio_ml:mmdetection
+    container_name: ml
     # build: .
     user: root
     environment:
@@ -82,6 +86,8 @@ services:
       - RQ_QUEUE_NAME=default
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - LABEL_STUDIO_HOSTNAME=http://192.168.17.7:8080
+      - HOSTNAME=http://192.168.17.7:8080
     ports:
       - 9090:9090
     depends_on:
@@ -90,6 +96,5 @@ services:
       - redis
     volumes:
       - "./data/server:/data"
-      - "./mydata/media/upload:/data/upload"
       - "./logs:/tmp"
 
